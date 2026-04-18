@@ -1,0 +1,267 @@
+{
+  "SREE": {
+    "password": "ssrm123",
+    "familyGroup": "SSRM",
+    "role": "admin",
+    "healthData": [],
+    "gamification": {
+      "totalPoints": 0,
+      "streak": 0,
+      "lastActiveDate": null
+    },
+    "today": {
+      "breakfast": false,
+      "lunch": false,
+      "dinner": false,
+      "exercise": false,
+      "walking": false,
+      "points": 0
+    }
+  },
+  "aarav": {
+    "password": "aarav123",
+    "familyGroup": "sharma",
+    "role": "user",
+    "healthData": [
+      {
+        "date": "13/4/2026",
+        "bmi": 25.4,
+        "bmiCategory": "Overweight",
+        "dietPlan": {
+          "summary": "Calorie-controlled, high-fibre Indian diet to reduce weight.",
+          "meals": {
+            "Morning": [
+              "Plain Oats with Skimmed Milk (no sugar) + 1 Amla",
+              "Moong Dal Chilla (no oil) with Green Chutney",
+              "1 Bowl Vegetable Daliya (no ghee)",
+              "2 Vegetable Idli + Sambar (less oil)",
+              "1 Ragi Dosa with Tomato Chutney (no butter)",
+              "2 Boiled Egg Whites + 1 Multigrain Toast",
+              "1 Bowl Mixed Sprouts with Lemon & Black Salt"
+            ],
+            "Afternoon": [
+              "1 Multigrain Roti + Large Green Salad + Dal (no tempering)",
+              "Half Cup Brown Rice + Grilled Chicken / Tofu + Bhindi Sabzi",
+              "Black Chickpea Salad with Onion, Tomato, Cucumber & Lemon",
+              "Tinda or Lauki Sabzi + 1 Bajra Roti + Curd",
+              "Masoor Dal + 1 Jowar Roti + Cucumber Raita",
+              "Moong Sprouts Sabzi + 1 Roti + Vegetable Soup",
+              "Grilled Fish / Paneer Tikka + Fresh Salad + 1 Roti"
+            ],
+            "Evening": [
+              "Cucumber & Carrot Sticks with Mint Chutney",
+              "1 Handful Roasted Chana",
+              "1 Cup Green Tea or Tulsi-Ginger Tea (no sugar)",
+              "1 Guava or Orange (Seasonal Fruit)",
+              "1 Piece Steamed Dhokla (no oil)",
+              "Plain Buttermilk (no cream)",
+              "Clear Tomato Soup (no butter)"
+            ],
+            "Night": [
+              "Clear Spinach Soup + Grilled Fish or Tofu",
+              "Bottle Gourd Sabzi + 1 Roti + Dal",
+              "Steamed Cauliflower & Carrots with Cumin",
+              "Vegetable Daliya Khichdi (no ghee) + Curd",
+              "Moong Dal Soup + Boiled Mixed Vegetables",
+              "Grilled Paneer (100g) + Sauteed Spinach",
+              "Egg Bhurji (no oil) + 1 Multigrain Roti"
+            ]
+          },
+          "tips": [
+            "Start every morning with 1 glass of warm water and lemon on an empty stomach",
+            "Avoid all fried, oily, and refined-flour foods completely",
+            "Drink 1 glass of water before each meal to avoid overeating",
+            "Walk briskly or cycle for at least 45 minutes every day",
+            "Stop eating after 7:00 PM to let your body digest properly",
+            "Eat whole fruits instead of packaged juices — the fibre is important"
+          ]
+        },
+        "symptoms": [
+          "Fatigue"
+        ],
+        "riskLevel": "Low",
+        "suggestions": [
+          "• Fatigue: Ensure 7–8 hours of sleep. Eat iron-rich foods."
+        ],
+        "doctors": [
+          "General Physician"
+        ]
+      }
+    ],
+    "gamification": {
+      "totalPoints": 55,
+      "streak": 1,
+      "lastActiveDate": "Mon Apr 13 2026"
+    },
+    "today": {
+      "breakfast": true,
+      "lunch": true,
+      "dinner": true,
+      "exercise": true,
+      "walking": true,
+      "points": 55
+    }
+  },
+  "anu": {
+    "password": "anu123",
+    "familyGroup": "sharma",
+    "role": "user",
+    "healthData": [
+      {
+        "date": "13/4/2026",
+        "bmi": 22.5,
+        "bmiCategory": "Normal",
+        "dietPlan": {
+          "summary": "Balanced Indian diet to maintain your ideal weight and energy.",
+          "meals": {
+            "Morning": [
+              "Broken Wheat Porridge (Daliya) with Milk & Honey",
+              "2 Moong Dal Chilla with Green Chutney",
+              "3 Idli + Sambar + Coconut Chutney",
+              "Vegetable Upma with Groundnuts & Lemon",
+              "Oats Khichdi with Seasonal Vegetables",
+              "1 Bowl Sprouts Chaat with Lemon & Chaat Masala",
+              "2 Ragi Roti with Curd & Green Chutney"
+            ],
+            "Afternoon": [
+              "1 Cup Brown Rice + Dal Tadka + Cucumber Raita",
+              "2 Multigrain Roti + Bhindi Masala + Fresh Salad",
+              "Rajma Chawal (half cup) + Onion-Tomato Salad",
+              "Mix Veg Dal + 2 Jowar Roti + Buttermilk",
+              "Chana Masala + 1 Roti + Green Salad",
+              "Curd Rice with Cumin + Seasonal Vegetable",
+              "Sambar Rice + Papad + Curd"
+            ],
+            "Evening": [
+              "Roasted Fox Nuts (Makhana) with Black Salt",
+              "Puffed Rice Bhel with Onion, Tomato & Chutney",
+              "2 Steamed Dhokla with Green Chutney",
+              "1 Guava, Banana or Amla (Seasonal Fruit)",
+              "Spiced Buttermilk + 2 Khakhras",
+              "Boiled Black Chickpea Chaat with Onion & Lemon",
+              "Tomato Vegetable Soup – 1 Cup"
+            ],
+            "Night": [
+              "2 Roti + Bottle Gourd Sabzi + Dal",
+              "Light Moong Dal Khichdi + Papad + Pickle",
+              "Mix Veg Sabzi + 1 Roti + 1 Bowl Curd",
+              "Spinach Dal + 1 Cup Rice + Salad",
+              "Besan Gatte ki Sabzi + 2 Bajra Roti",
+              "Soya Chunks Curry + 2 Rotis + Jeera Rice",
+              "Mushroom & Peas Curry + 2 Rotis + Buttermilk"
+            ]
+          },
+          "tips": [
+            "Drink 8–10 glasses of water every day to stay hydrated",
+            "Exercise for at least 30 minutes daily — walk, yoga, or cycling",
+            "Keep your night meal light so your body can rest and digest",
+            "Avoid fried and packaged foods as much as possible",
+            "Have curd or buttermilk daily — it is great for gut health",
+            "Choose seasonal fruits and vegetables for freshness and nutrition"
+          ]
+        },
+        "symptoms": [],
+        "riskLevel": "--",
+        "suggestions": [],
+        "doctors": []
+      }
+    ],
+    "gamification": {
+      "totalPoints": 45,
+      "streak": 1,
+      "lastActiveDate": "Mon Apr 13 2026"
+    },
+    "today": {
+      "breakfast": true,
+      "lunch": true,
+      "dinner": true,
+      "exercise": true,
+      "walking": false,
+      "points": 45
+    }
+  },
+  "rohit": {
+    "password": "rohit123",
+    "familyGroup": "sharma",
+    "role": "user",
+    "healthData": [
+      {
+        "date": "13/4/2026",
+        "bmi": 16.6,
+        "bmiCategory": "Underweight",
+        "dietPlan": {
+          "summary": "High-calorie, nutrient-rich Indian diet to gain healthy weight.",
+          "meals": {
+            "Morning": [
+              "2 Aloo Paratha with Butter & Curd",
+              "1 Glass Full-Cream Milk with Almonds & Saffron",
+              "Sooji Halwa with Ghee, Cashews & Raisins",
+              "Poha with Groundnuts, Onion & Green Chilli",
+              "Besan Chilla with Paneer Stuffing & Chutney",
+              "Methi Thepla with Ghee, Pickle & Curd",
+              "Uttapam with Coconut Chutney & Sambar"
+            ],
+            "Afternoon": [
+              "3 Wheat Rotis + Rajma Masala + 1 Bowl Rice",
+              "Chole Bhature with Mint Chutney & Lassi",
+              "Dal Makhani + 2 Butter Naan + Pickle",
+              "Mutton Curry (or Paneer Tikka Masala) + Rice",
+              "Kadhi Pakoda + Jeera Rice + Salad",
+              "Mix Veg Sabzi + 3 Rotis + Mango Pickle",
+              "Palak Paneer + 2 Rotis + 1 Cup Rice"
+            ],
+            "Evening": [
+              "Peanut Jaggery Chikki + 1 Glass Banana Milkshake",
+              "Bread with Butter & Jam + Masala Chai",
+              "2 Samosa with Green Chutney & Tamarind Chutney",
+              "Fox Nut Pudding (Makhane ki Kheer) with Milk",
+              "Roasted Peanut & Puffed Rice Mix",
+              "Dates & Dried Figs with Warm Milk",
+              "Poha Chivda with Cashews & Raisins"
+            ],
+            "Night": [
+              "3 Rotis + Chicken Curry / Paneer Bhurji + Raita",
+              "Khichdi with Ghee + Potato Sabzi + Papad",
+              "Sarson da Saag + 2 Makki di Roti + Lassi",
+              "Egg Curry + 2 Rotis + Dal Tadka",
+              "Veg / Chicken Biryani with Boondi Raita",
+              "Shahi Paneer + 2 Naan + Jeera Rice",
+              "Fish Curry (or Mushroom Masala) + 2 Rotis"
+            ]
+          },
+          "tips": [
+            "Eat every 2–3 hours — never skip a meal",
+            "Add ghee or butter to each meal for healthy calories",
+            "Include milk, curd, or paneer daily for protein",
+            "Drink a glass of warm turmeric milk before bed for extra calories",
+            "Have a handful of almonds, cashews, or raisins every day",
+            "Avoid maida and junk food — they only add empty calories"
+          ]
+        },
+        "symptoms": [
+          "Poor Sleep"
+        ],
+        "riskLevel": "Low",
+        "suggestions": [
+          "• Poor Sleep: Maintain a consistent sleep schedule. Avoid screens 1 hour before bed."
+        ],
+        "doctors": [
+          "General Physician"
+        ]
+      }
+    ],
+    "gamification": {
+      "totalPoints": 30,
+      "streak": 1,
+      "lastActiveDate": "Mon Apr 13 2026"
+    },
+    "today": {
+      "breakfast": true,
+      "lunch": true,
+      "dinner": true,
+      "exercise": false,
+      "walking": false,
+      "points": 30
+    }
+  }
+}

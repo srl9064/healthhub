@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthHub</title>
+<meta name="description" content="HealthHub: A full-stack family health monitoring platform. Track BMI, symptoms, diet, gamification, and family health together.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===================== GLOBAL ===================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --pink: #ff4d79;
+  --pink2: #ff758c;
+  --green: #4caf50;
+  --orange: #ff9800;
+  --red: #f44336;
+  --blue: #2196F3;
+  --purple: #9c27b0;
+  --card: rgba(255,255,255,0.78);
+  --glass: rgba(255,255,255,0.68);
+  --shadow: 0 16px 40px rgba(0,0,0,0.10);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 60%, #c2e9fb 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: #333;
+}
+
+/* ===================== BUBBLES ===================== */
+#bubbleContainer {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+}
+.bubble {
+  position: absolute; bottom: -200px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  box-shadow: inset 0 0 20px rgba(255,255,255,0.4), 0 0 30px rgba(255,255,255,0.1);
+  backdrop-filter: blur(3px);
+  animation: floatUp linear infinite;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0) rotate(0deg) scale(1);   opacity:0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 0.6; }
+  100% { transform: translateY(-110vh) rotate(720deg) scale(0.6); opacity:0; }
+}
+
+/* ===================== LAYOUT ===================== */
+.page-wrapper {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+/* ===================== SCREENS ===================== */
+.screen { display: none; }
+.screen.active { display: flex; }
+
+/* ===================== AUTH ===================== */
+#authScreen {
+  justify-content: center; align-items: center;
+  min-height: 100vh; padding: 30px 16px;
+}
+.auth-box {
+  width: 100%; max-width: 480px;
+  background: rgba(255,255,255,0.80);
+  backdrop-filter: blur(28px);
+  border: 1px solid rgba(255,255,255,0.65);
+  border-radius: 28px;
+  padding: 44px 40px;
+  box-shadow: var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.3);
+  animation: slideUp 0.55s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(40px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.auth-logo { text-align:center; margin-bottom:28px; }
+.auth-logo .emoji { font-size:52px; display:block; }
+.auth-logo h1 { font-size:30px; font-weight:800; color:var(--pink); margin-top:8px; }
+.auth-logo p  { color:#888; font-size:14px; margin-top:4px; }
+
+.auth-tabs {
+  display:flex; background:#f1f1f8; border-radius:16px; padding:4px; margin-bottom:28px; gap:4px;
+}
+.auth-tab {
+  flex:1; padding:11px; border-radius:12px; border:none;
+  font-family:inherit; font-size:14px; font-weight:700;
+  background:transparent; color:#999; cursor:pointer; transition:var(--transition);
+}
+.auth-tab.active {
+  background:linear-gradient(135deg,var(--pink),var(--pink2));
+  color:#fff; box-shadow:0 4px 14px rgba(255,77,121,0.32);
+}
+
+.field { margin-bottom:16px; }
+.field label { display:block; font-size:12px; font-weight:700; color:#777; text-transform:uppercase; letter-spacing:0.7px; margin-bottom:6px; }
+.field input {
+  width:100%; padding:13px 16px; border-radius:14px;
+  border:1.5px solid rgba(0,0,0,0.09); font-size:15px; font-family:inherit;
+  background:rgba(255,255,255,0.88); transition:var(--transition);
+}
+.field input:focus { outline:none; border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,77,121,0.14); background:#fff; }
+.auth-hint { font-size:12px; color:#aaa; line-height:1.5; margin-top:10px; text-align:center; }
+
+.btn {
+  display:block; width:100%; padding:14px; border-radius:14px; border:none;
+  font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; transition:var(--transition);
+  text-align:center;
+}
+.btn-primary { background:linear-gradient(135deg,var(--pink),var(--pink2)); color:#fff; box-shadow:0 6px 18px rgba(255,77,121,0.35); margin-top:8px; }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(255,77,121,0.45); }
+.btn-primary:active { transform:translateY(1px); }
+.btn-green { background:linear-gradient(135deg,#43a047,#1b5e20); color:#fff; box-shadow:0 4px 14px rgba(67,160,71,0.3); }
+.btn-blue  { background:linear-gradient(135deg,#1976D2,#0D47A1); color:#fff; box-shadow:0 4px 14px rgba(25,118,210,0.3); }
+.btn-purple{ background:linear-gradient(135deg,#7b1fa2,#4a148c); color:#fff; box-shadow:0 4px 14px rgba(123,31,162,0.3); }
+.btn-sm { width:auto; padding:9px 20px; font-size:13px; border-radius:10px; margin-top:0; }
+.btn-ghost { background:rgba(0,0,0,0.06); color:#555; box-shadow:none; margin-top:6px; }
+.btn-ghost:hover { background:rgba(0,0,0,0.11); }
+
+.msg { display:none; padding:10px 16px; border-radius:10px; font-size:13px; font-weight:600; margin-top:12px; text-align:center; }
+.msg.ok    { display:block; background:#e8f5e9; color:#2e7d32; }
+.msg.err   { display:block; background:#fce4ec; color:#c62828; }
+.msg.warn  { display:block; background:#fff8e1; color:#e65100; }
+
+/* ===================== APP SHELL ===================== */
+#appScreen {
+  flex-direction:column; min-height:100vh;
+}
+
+/* NAVBAR */
+.navbar {
+  position:sticky; top:0; z-index:100;
+  background:rgba(255,255,255,0.90);
+  backdrop-filter:blur(18px);
+  padding:12px 24px;
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.08);
+}
+.nav-brand { font-size:20px; font-weight:800; color:var(--pink); display:flex; align-items:center; gap:8px; }
+.nav-links { display:flex; gap:4px; flex-wrap:wrap; }
+.nav-link {
+  padding:8px 14px; border-radius:12px; border:none;
+  font-family:inherit; font-size:13px; font-weight:600; color:#666;
+  background:transparent; cursor:pointer; transition:var(--transition);
+}
+.nav-link:hover, .nav-link.active {
+  background:linear-gradient(135deg,var(--pink),var(--pink2));
+  color:#fff; box-shadow:0 3px 12px rgba(255,77,121,0.28);
+}
+.nav-right { display:flex; gap:8px; align-items:center; }
+.user-pill {
+  background:linear-gradient(135deg,var(--pink),var(--pink2));
+  color:#fff; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:700;
+  display:flex; align-items:center; gap:6px;
+}
+.server-status {
+  display:flex; align-items:center; gap:6px;
+  font-size:12px; font-weight:700; padding:5px 12px;
+  border-radius:20px; background:rgba(0,0,0,0.06); color:#555;
+}
+.server-dot {
+  width:9px; height:9px; border-radius:50%;
+  background:#ccc; flex-shrink:0;
+  transition: background 0.4s;
+}
+.server-dot.online  { background:#4caf50; box-shadow:0 0 6px rgba(76,175,80,0.5); }
+.server-dot.offline { background:#f44336; box-shadow:0 0 6px rgba(244,67,54,0.5); animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.offline-banner {
+  background:linear-gradient(135deg,#fce4ec,#fff3e0);
+  border:2px solid #f44336; border-radius:14px;
+  padding:16px 20px; margin-bottom:18px;
+  display:none;
+  font-size:14px; font-weight:600; color:#c62828;
+  animation: slideUp 0.4s ease;
+}
+.offline-banner.show { display:flex; align-items:center; gap:12px; }
+
+.logout-btn {
+  padding:7px 14px; border-radius:10px; border:none; font-family:inherit;
+  font-size:13px; font-weight:600; color:#c62828;
+  background:rgba(198,40,40,0.09); cursor:pointer; transition:var(--transition);
+}
+.logout-btn:hover { background:rgba(198,40,40,0.16); }
+
+/* MAIN CONTENT */
+.main-content { flex:1; padding:28px 24px 60px; max-width:1100px; width:100%; margin:0 auto; }
+
+/* SECTIONS */
+.section { display:none; animation:fadeIn 0.42s ease; }
+.section.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:scale(0.98);} to{opacity:1;transform:scale(1);} }
+
+.section-title {
+  font-size:22px; font-weight:800; color:#333; margin-bottom:20px;
+  display:flex; align-items:center; gap:10px;
+}
+.section-title .badge-pill {
+  font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px;
+  background:linear-gradient(135deg,var(--pink),var(--pink2)); color:#fff;
+}
+
+/* ===================== CARDS ===================== */
+.card {
+  background:var(--card); backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.75);
+  border-radius:var(--radius);
+  padding:24px;
+  box-shadow:var(--shadow);
+  transition:var(--transition);
+  margin-bottom:20px;
+}
+.card:hover { transform:translateY(-2px); box-shadow:0 22px 44px rgba(0,0,0,0.12); }
+.card h3 { font-size:17px; font-weight:700; color:#333; margin-bottom:14px; }
+
+.grid-2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+.grid-3 { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+
+/* ===================== INPUTS (app) ===================== */
+.app-input {
+  width:100%; padding:13px 16px; border-radius:13px;
+  border:1.5px solid rgba(0,0,0,0.09); font-size:15px; font-family:inherit;
+  background:rgba(255,255,255,0.92); margin-bottom:12px; transition:var(--transition);
+}
+.app-input:focus { outline:none; border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,77,121,0.13); background:#fff; }
+.input-row { display:flex; gap:12px; }
+.input-row .app-input { margin-bottom:0; }
+
+/* ===================== FAMILY DASHBOARD ===================== */
+.member-card {
+  background:var(--card); backdrop-filter:blur(16px);
+  border-radius:var(--radius); padding:22px;
+  box-shadow:var(--shadow);
+  border-left:5px solid #ddd; transition:var(--transition);
+  position:relative; overflow:hidden;
+}
+.member-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+}
+.member-card.risk-Low    { border-left-color:#4caf50; }
+.member-card.risk-Low::before    { background:linear-gradient(90deg,#4caf50,#81c784); }
+.member-card.risk-Moderate { border-left-color:#ff9800; }
+.member-card.risk-Moderate::before { background:linear-gradient(90deg,#ff9800,#ffb74d); }
+.member-card.risk-High   { border-left-color:#f44336; }
+.member-card.risk-High::before   { background:linear-gradient(90deg,#f44336,#ef9a9a); }
+.member-card:hover { transform:translateY(-3px); box-shadow:0 22px 44px rgba(0,0,0,0.12); }
+
+.member-card-top { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.member-icon { font-size:36px; }
+.member-name-big { font-size:18px; font-weight:800; color:#222; }
+.member-family { font-size:12px; color:#aaa; }
+
+.risk-badge {
+  display:inline-block; padding:4px 12px; border-radius:20px;
+  font-size:12px; font-weight:700; margin-top:6px;
+}
+.risk-badge.Low      { background:#e8f5e9; color:#2e7d32; }
+.risk-badge.Moderate { background:#fff8e1; color:#e65100; }
+.risk-badge.High     { background:#fce4ec; color:#c62828; }
+.risk-badge.unknown  { background:#f5f5f5; color:#999; }
+
+.bmi-badge {
+  font-size:22px; font-weight:800;
+}
+.bmi-badge.Normal      { color:#2e7d32; }
+.bmi-badge.Underweight { color:#e65100; }
+.bmi-badge.Overweight  { color:#f57f17; }
+.bmi-badge.Obese       { color:#c62828; }
+
+/* ===================== SYMPTOM BOXES ===================== */
+.symptom-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px; margin:16px 0;
+}
+.symptom-box {
+  background:linear-gradient(135deg,#fff9fb,#ffe4ec);
+  border:2px solid rgba(255,77,121,0.12);
+  border-radius:14px; padding:14px;
+  text-align:center; cursor:pointer;
+  transition:var(--transition); user-select:none;
+  font-size:14px; font-weight:600; color:#555;
+}
+.symptom-box .sym-icon { font-size:26px; display:block; margin-bottom:7px; }
+.symptom-box:hover { transform:scale(1.04); border-color:var(--pink); background:#ffe4ec; }
+.symptom-box.selected {
+  background:linear-gradient(135deg,var(--pink),var(--pink2));
+  color:#fff; border-color:transparent;
+  box-shadow:0 6px 18px rgba(255,77,121,0.35);
+  transform:scale(1.04);
+}
+
+/* ===================== RESULT BOX ===================== */
+.result-box {
+  border-left:5px solid var(--pink); padding:20px;
+  border-radius:var(--radius); background:rgba(248,249,255,0.92);
+  margin-top:18px; display:none;
+  animation:slideUp 0.4s ease;
+}
+.result-box.show { display:block; }
+.risk-label { font-size:20px; font-weight:800; margin-bottom:10px; }
+.risk-label.Low      { color:#2e7d32; }
+.risk-label.Moderate { color:#e65100; }
+.risk-label.High     { color:#c62828; }
+
+/* ===================== DIET PLAN ===================== */
+.meal-section { margin-bottom:18px; }
+.meal-title {
+  font-size:15px; font-weight:700; color:var(--pink);
+  border-bottom:2px solid #ffe4ec; padding-bottom:6px; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.meal-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:10px; margin-bottom:6px;
+  font-size:14px; cursor:pointer;
+  background:rgba(255,255,255,0.7);
+  border:1.5px solid rgba(0,0,0,0.06);
+  transition:all 0.25s ease;
+}
+.meal-item:hover { background:#fff3f7; border-color:rgba(255,77,121,0.2); }
+.meal-item.checked {
+  background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+  border-color:#4caf50;
+  opacity:0.85;
+}
+.meal-item input[type="checkbox"] {
+  appearance:none; -webkit-appearance:none;
+  width:20px; height:20px; border-radius:6px; flex-shrink:0;
+  border:2px solid #ddd; background:#fff;
+  cursor:pointer; transition:all 0.2s ease; position:relative;
+}
+.meal-item input[type="checkbox"]:checked {
+  background:linear-gradient(135deg,#4caf50,#66bb6a);
+  border-color:#4caf50;
+}
+.meal-item input[type="checkbox"]:checked::after {
+  content:'✓'; position:absolute; color:#fff;
+  font-size:13px; font-weight:800;
+  top:50%; left:50%; transform:translate(-50%,-52%);
+}
+.meal-item span { flex:1; transition:all 0.2s ease; color:#333; }
+.meal-item span.done { text-decoration:line-through; color:#aaa; }
+.meal-item .meal-done-badge {
+  font-size:11px; font-weight:700; color:#4caf50;
+  background:#e8f5e9; padding:2px 8px; border-radius:20px;
+  opacity:0; transition:opacity 0.2s ease;
+}
+.meal-item.checked .meal-done-badge { opacity:1; }
+.tips-list { list-style:none; padding-left:0; }
+.tips-list li {
+  color:#555; font-size:13px; margin-bottom:8px;
+  padding:8px 12px; background:rgba(255,255,255,0.7);
+  border-radius:10px; border-left:3px solid var(--pink);
+}
+
+/* =========== WEEK DIET NAV =========== */
+.week-nav {
+  display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px;
+  padding:6px; background:rgba(255,255,255,0.5);
+  border-radius:16px;
+}
+.day-tab {
+  flex:1; min-width:60px; padding:8px 10px;
+  border:none; border-radius:12px;
+  font-family:inherit; font-size:12px; font-weight:700;
+  cursor:pointer; transition:all 0.22s ease;
+  background:transparent; color:#888; text-align:center;
+  position:relative;
+}
+.day-tab:hover { background:rgba(255,77,121,0.1); color:var(--pink); }
+.day-tab.active {
+  background:linear-gradient(135deg,var(--pink),var(--pink2));
+  color:#fff; box-shadow:0 4px 14px rgba(255,77,121,0.35);
+}
+.day-tab .day-progress {
+  display:block; height:4px; border-radius:2px;
+  background:rgba(255,255,255,0.4); margin-top:4px; overflow:hidden;
+}
+.day-tab.active .day-progress { background:rgba(255,255,255,0.5); }
+.day-tab .day-fill {
+  height:100%; border-radius:2px;
+  background:rgba(255,255,255,0.9); transition:width 0.4s ease;
+}
+.day-tab:not(.active) .day-fill { background:var(--pink); }
+
+.week-refresh-banner {
+  background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+  border:2px solid #4caf50; border-radius:14px;
+  padding:14px 18px; margin-bottom:16px;
+  display:none; align-items:center; gap:12px;
+  font-size:14px; font-weight:600; color:#2e7d32;
+}
+.week-refresh-banner.show { display:flex; }
+.week-countdown {
+  background:rgba(255,255,255,0.7);
+  border-radius:12px; padding:10px 16px;
+  margin-bottom:16px; font-size:13px; color:#777;
+  display:flex; align-items:center; gap:8px;
+}
+.week-countdown strong { color:var(--pink); }
+
+/* =========== NEXT BUTTON =========== */
+.next-btn-row {
+  display:flex; justify-content:flex-end; margin-top:24px;
+}
+.btn-next {
+  display:flex; align-items:center; gap:8px;
+  padding:12px 28px; border-radius:16px; border:none;
+  font-family:inherit; font-size:15px; font-weight:700;
+  background:linear-gradient(135deg,var(--pink),var(--pink2));
+  color:#fff; cursor:pointer; transition:all 0.25s ease;
+  box-shadow:0 6px 18px rgba(255,77,121,0.35);
+}
+.btn-next:hover { transform:translateX(4px); box-shadow:0 10px 24px rgba(255,77,121,0.45); }
+.btn-next:active { transform:translateX(2px); }
+
+/* ===================== GAMIFICATION ===================== */
+.points-display {
+  background:linear-gradient(135deg,var(--pink),var(--pink2));
+  color:#fff; border-radius:var(--radius); padding:24px;
+  text-align:center; margin-bottom:20px;
+}
+.points-number { font-size:56px; font-weight:800; line-height:1; }
+.streak-row { display:flex; justify-content:center; gap:30px; margin-top:14px; }
+.streak-stat { text-align:center; }
+.streak-stat .num { font-size:28px; font-weight:800; }
+.streak-stat .lbl { font-size:12px; opacity:0.85; }
+
+.activity-btns { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; }
+.act-btn {
+  padding:16px; border-radius:14px; border:none;
+  font-family:inherit; font-size:14px; font-weight:700;
+  cursor:pointer; transition:var(--transition);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.act-btn .icon { font-size:28px; }
+.act-btn .pts  { font-size:12px; opacity:0.8; }
+.act-btn:not(.done) { background:#fff; box-shadow:0 4px 14px rgba(0,0,0,0.08); color:#333; }
+.act-btn:not(.done):hover { transform:translateY(-3px); box-shadow:0 10px 24px rgba(0,0,0,0.13); }
+.act-btn.done { background:linear-gradient(135deg,#e8f5e9,#c8e6c9); color:#2e7d32; cursor:default; box-shadow:none; }
+
+/* ===================== HEALTH HISTORY ===================== */
+.history-row {
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;
+  padding:14px 18px; border-radius:14px;
+  background:rgba(255,255,255,0.85); margin-bottom:10px;
+  border-left:4px solid #ddd; transition:var(--transition);
+}
+.history-row.risk-Low    { border-left-color:#4caf50; }
+.history-row.risk-Moderate { border-left-color:#ff9800; }
+.history-row.risk-High   { border-left-color:#f44336; }
+.history-date { font-weight:700; color:#333; font-size:14px; }
+.history-meta { font-size:13px; color:#777; }
+
+/* ===================== ADMIN ===================== */
+.admin-family-block {
+  background:var(--card); border-radius:var(--radius); padding:24px;
+  margin-bottom:22px; box-shadow:var(--shadow);
+  border-top:4px solid var(--pink);
+}
+.admin-family-name { font-size:18px; font-weight:800; color:var(--pink); margin-bottom:14px; }
+.admin-table { width:100%; border-collapse:collapse; font-size:13px; }
+.admin-table th { background:linear-gradient(135deg,var(--pink),var(--pink2)); color:#fff; padding:10px 14px; text-align:left; }
+.admin-table th:first-child { border-radius:10px 0 0 0; }
+.admin-table th:last-child  { border-radius:0 10px 0 0; }
+.admin-table td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.05); color:#444; }
+.admin-table tr:last-child td { border:none; }
+.admin-table tr:nth-child(even) td { background:rgba(255,77,121,0.03); }
+.admin-stats { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+.admin-stat-card {
+  background:var(--card); border-radius:var(--radius-sm); padding:18px 22px;
+  box-shadow:var(--shadow); flex:1; min-width:140px; text-align:center;
+}
+.admin-stat-card .num { font-size:36px; font-weight:800; color:var(--pink); }
+.admin-stat-card .lbl { font-size:13px; color:#888; margin-top:4px; }
+
+/* ===================== HEALTH SUMMARY PDF ===================== */
+#summaryReport {
+  background:#fff; padding:30px; border-radius:16px;
+}
+#summaryReport h2 { color:var(--pink); border-bottom:3px solid var(--pink); padding-bottom:8px; margin-bottom:16px; }
+#summaryReport .sum-row { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #eee; font-size:14px; }
+#summaryReport .sum-row:last-child { border:none; }
+#summaryReport .sum-label { font-weight:600; color:#777; }
+#summaryReport .sum-value { font-weight:700; color:#333; }
+
+/* ===================== KNOWLEDGE POPUP ===================== */
+.knowledge-popup {
+  position:fixed; bottom:30px; right:30px; z-index:999;
+  max-width:320px; background:rgba(255,255,255,0.96);
+  backdrop-filter:blur(16px);
+  border-radius:20px; padding:20px 22px;
+  box-shadow:0 16px 40px rgba(0,0,0,0.16);
+  border-left:5px solid var(--pink);
+  animation:popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
+  display:none;
+}
+.knowledge-popup.show { display:block; }
+@keyframes popIn {
+  from { opacity:0; transform:translateY(30px) scale(0.85); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.kp-title { font-size:12px; font-weight:700; color:var(--pink); text-transform:uppercase; margin-bottom:6px; letter-spacing:0.8px; }
+.kp-msg   { font-size:15px; font-weight:600; color:#333; line-height:1.5; }
+.kp-close { float:right; cursor:pointer; font-size:18px; color:#aaa; margin-top:-20px; }
+
+/* ===================== FAMILY ALERT BANNER ===================== */
+.alert-banner {
+  background:linear-gradient(135deg,#fce4ec,#fff3e0);
+  border-left:5px solid var(--red);
+  border-radius:var(--radius-sm); padding:12px 18px;
+  margin-bottom:12px; font-size:14px; font-weight:600; color:#c62828;
+  animation:fadeIn 0.4s ease;
+}
+
+/* ===================== SCROLLBAR ===================== */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-thumb { background:rgba(255,77,121,0.4); border-radius:4px; }
+
+/* ===================== RESPONSIVE ===================== */
+@media(max-width:640px) {
+  .auth-box { padding:28px 22px; }
+  .nav-links { display:none; }
+  .main-content { padding:16px 12px 60px; }
+  .symptom-grid { grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); }
+}
+
+/* ===================== PRINT STYLES ===================== */
+@media print {
+  /* Hide everything by default */
+  body * { visibility: hidden !important; }
+  #bubbleContainer { display:none !important; }
+
+  /* Show only the print area */
+  #printArea { visibility: visible !important; position: fixed !important; top:0; left:0; width:100% !important; padding:30px !important; background:#fff !important; z-index:99999; }
+  #printArea * { visibility: visible !important; }
+
+  /* Report typography for print */
+  #printArea h2 { color: #ff4d79 !important; border-bottom: 3px solid #ff4d79 !important; }
+  #printArea .sum-row { display: flex !important; justify-content: space-between !important; }
+  #printArea .sum-label { font-weight:600; color:#777; }
+  #printArea .sum-value { font-weight:700; color:#333; }
+}
+</style>
+</head>
+<body>
+
+<!-- BUBBLES -->
+<div id="bubbleContainer"></div>
+
+<div class="page-wrapper">
+
+<!-- ===================== AUTH SCREEN ===================== -->
+<div id="authScreen" class="screen active">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <span class="emoji">🩺</span>
+      <h1>HealthHub</h1>
+      <p>Your family health companion</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="showAuthTab('login')">🔑 Login</button>
+      <button class="auth-tab" onclick="showAuthTab('register')">📝 Register</button>
+    </div>
+
+    <!-- Login -->
+    <div id="loginForm">
+      <div class="field"><label>Username</label><input type="text" id="loginUser" placeholder="Your username"></div>
+      <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="Password" onkeypress="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-primary" onclick="doLogin()">🔑 Login</button>
+      <div class="msg" id="loginMsg"></div>
+    </div>
+
+    <!-- Register -->
+    <div id="registerForm" style="display:none;">
+      <div class="field"><label>Username</label><input type="text" id="regUser" placeholder="Choose a username"></div>
+      <div class="field"><label>Password</label><input type="password" id="regPass" placeholder="Choose a password"></div>
+      <div class="field">
+        <label>Family Group Name <span style="color:var(--pink);font-style:italic;font-size:11px;">(shared with family)</span></label>
+        <input type="text" id="regFamily" placeholder="e.g. Sharma Family" onkeypress="if(event.key==='Enter')doRegister()">
+      </div>
+      <button class="btn btn-primary" onclick="doRegister()">✅ Create Account</button>
+      <div class="msg" id="registerMsg"></div>
+      <p class="auth-hint">All family members must use the <b>same Family Group Name</b>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APP SCREEN ===================== -->
+<div id="appScreen" class="screen">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-brand">🩺 <span>HealthHub</span></div>
+    <div class="nav-links">
+      <button class="nav-link active" data-section="dashboard" onclick="showSection('dashboard')">🏠 Dashboard</button>
+      <button class="nav-link" data-section="bmi" onclick="showSection('bmi')">⚖️ BMI</button>
+      <button class="nav-link" data-section="symptoms" onclick="showSection('symptoms')">🩺 Symptoms</button>
+      <button class="nav-link" data-section="diet" onclick="showSection('diet')">🍽️ Diet Plan</button>
+      <button class="nav-link" data-section="activity" onclick="showSection('activity')">🏃 Activity</button>
+      <button class="nav-link" data-section="history" onclick="showSection('history')">📅 History</button>
+      <button class="nav-link" data-section="report" onclick="showSection('report')">📄 Report</button>
+      <button class="nav-link" id="adminNavBtn" data-section="admin" onclick="showSection('admin')" style="display:none;">🔐 Admin</button>
+    </div>
+    <div class="nav-right">
+      <div class="server-status" id="serverStatus">
+        <div class="server-dot" id="serverDot"></div>
+        <span id="serverLabel">Server...</span>
+      </div>
+      <div class="user-pill" id="userPill">👤 User</div>
+      <button class="logout-btn" onclick="doLogout()">🔓 Logout</button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <section id="sec-dashboard" class="section active">
+      <div class="section-title">🏠 Family Dashboard <span id="familyNameBadge" class="badge-pill"></span></div>
+
+      <!-- Offline Banner -->
+      <div class="offline-banner" id="offlineBanner">
+        <span style="font-size:24px;">🔴</span>
+        <div>
+          <div>Server is offline! BMI, symptoms, and other features won't work.</div>
+          <div style="font-size:12px;font-weight:400;color:#e65100;margin-top:3px;">Run this command in a terminal: <code style="background:#fff;padding:2px 6px;border-radius:4px;">cd backend &amp;&amp; node server.js</code></div>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div id="alertBanners"></div>
+
+      <!-- Quick Stats -->
+      <div class="grid-3" id="quickStats" style="margin-bottom:20px;"></div>
+
+      <!-- Family Members -->
+      <div class="card">
+        <h3>👨‍👩‍👧 Family Members</h3>
+        <div id="familyMembersGrid" class="grid-2">
+          <p style="color:#aaa;">Loading family data...</p>
+        </div>
+      </div>
+      <!-- Next button -->
+      <div class="next-btn-row">
+        <button class="btn-next" onclick="goNextSection('dashboard')">Next: BMI Calculator <span>→</span></button>
+      </div>
+    </section>
+
+    <!-- ===== BMI CALCULATOR ===== -->
+    <section id="sec-bmi" class="section">
+      <div class="section-title">⚖️ BMI Calculator</div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Enter Your Measurements</h3>
+          <label style="font-size:13px;color:#777;font-weight:600;">Height (cm)</label>
+          <input class="app-input" type="number" id="bmiHeight" placeholder="e.g. 165">
+          <label style="font-size:13px;color:#777;font-weight:600;">Weight (kg)</label>
+          <input class="app-input" type="number" id="bmiWeight" placeholder="e.g. 60">
+          <button class="btn btn-primary" onclick="doBMI()">Calculate BMI →</button>
+          <div class="msg" id="bmiMsg"></div>
+        </div>
+
+        <div class="card" id="bmiResultCard" style="display:none;">
+          <h3>Your BMI Result</h3>
+          <div style="text-align:center;padding:20px 0;">
+            <div id="bmiNumber" class="bmi-badge" style="font-size:52px;"></div>
+            <div id="bmiCategoryLabel" style="font-size:16px;font-weight:700;color:#555;margin-top:8px;"></div>
+            <div id="bmiRange" style="font-size:13px;color:#aaa;margin-top:4px;"></div>
+          </div>
+          <button class="btn btn-green" onclick="showSection('diet')" style="margin-top:10px;">🍽️ View My Diet Plan</button>
+        </div>
+      </div>
+      <!-- Next button -->
+      <div class="next-btn-row">
+        <button class="btn-next" onclick="goNextSection('bmi')">Next: Symptom Checker <span>→</span></button>
+      </div>
+    </section>
+
+    <!-- ===== SYMPTOM CHECKER ===== -->
+    <section id="sec-symptoms" class="section">
+      <div class="section-title">🩺 Symptom Checker</div>
+      <div class="card">
+        <h3>Select All Symptoms You're Experiencing</h3>
+        <p style="color:#888;font-size:13px;margin-bottom:4px;">Tap on symptoms to select (multiple allowed)</p>
+        <div class="symptom-grid" id="symptomGrid"></div>
+        <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="doSymptoms()">🔍 Analyze Risk</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSymptoms()">✕ Clear All</button>
+        </div>
+        <div class="msg" id="sympMsg"></div>
+      </div>
+
+      <div class="result-box" id="symptomResult">
+        <div id="riskLabel" class="risk-label"></div>
+        <div id="suggestionsList" style="font-size:14px;color:#444;line-height:1.8;"></div>
+        <div id="doctorsList" style="margin-top:14px;"></div>
+      </div>
+      <!-- Next button -->
+      <div class="next-btn-row">
+        <button class="btn-next" onclick="goNextSection('symptoms')">Next: Diet Plan <span>→</span></button>
+      </div>
+    </section>
+
+    <!-- ===== DIET PLAN ===== -->
+    <section id="sec-diet" class="section">
+      <div class="section-title">🍽️ Personalised Weekly Diet Plan <span class="badge-pill">7 Days</span></div>
+      <div id="noDietMsg" class="card" style="text-align:center;color:#aaa;padding:40px;">
+        <div style="font-size:46px;margin-bottom:10px;">🍽️</div>
+        <p>Calculate your BMI first to get a personalised weekly diet plan.</p>
+        <button class="btn btn-primary btn-sm" onclick="showSection('bmi')" style="margin-top:14px;">Go to BMI Calculator</button>
+      </div>
+      <div id="dietContent" style="display:none;">
+        <!-- Week refresh banner -->
+        <div class="week-refresh-banner" id="weekRefreshBanner">
+          <span style="font-size:24px;">✅</span>
+          <div>
+            <div>A week has passed! Your diet plan has been refreshed.</div>
+            <div style="font-size:12px;font-weight:400;margin-top:3px;">Recalculate your BMI to get an updated plan based on your new weight.</div>
+          </div>
+        </div>
+        <!-- Countdown -->
+        <div class="week-countdown" id="weekCountdown">
+          <span>📅</span>
+          <span>Week resets in: <strong id="countdownText">7 days</strong></span>
+          <span style="margin-left:auto;font-size:12px;" id="weekProgress"></span>
+        </div>
+        <!-- Day tabs -->
+        <div class="week-nav" id="weekNav"></div>
+        <div class="card" id="dietSummaryCard">
+          <h3 id="dietHeadline"></h3>
+          <p id="dietSummary" style="color:#666;font-size:14px;margin-bottom:16px;"></p>
+          <div id="dietMeals"></div>
+        </div>
+        <div class="card">
+          <h3>💡 Nutrition Tips</h3>
+          <ul class="tips-list" id="dietTips"></ul>
+        </div>
+        <!-- Next button -->
+        <div class="next-btn-row">
+          <button class="btn-next" onclick="goNextSection('diet')">
+            Next: Activity Tracker <span>→</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ACTIVITY TRACKER ===== -->
+    <section id="sec-activity" class="section">
+      <div class="section-title">🏃 Activity Tracker</div>
+      <div class="points-display">
+        <div style="font-size:14px;font-weight:600;opacity:0.85;margin-bottom:6px;">TODAY'S POINTS</div>
+        <div class="points-number" id="todayPoints">0</div>
+        <div class="streak-row">
+          <div class="streak-stat"><div class="num" id="totalPoints">0</div><div class="lbl">Total Points</div></div>
+          <div class="streak-stat"><div class="num" id="streakCount">0 🔥</div><div class="lbl">Day Streak</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Log Today's Activities</h3>
+        <p style="color:#888;font-size:13px;margin-bottom:16px;">Tap each activity to earn points. Activities reset daily.</p>
+        <div class="activity-btns" id="activityBtns">
+          <button class="act-btn" id="act-breakfast" onclick="logActivity('breakfast')">
+            <span class="icon">🍳</span>Breakfast Done<span class="pts">+10 pts</span>
+          </button>
+          <button class="act-btn" id="act-lunch" onclick="logActivity('lunch')">
+            <span class="icon">🥗</span>Lunch Done<span class="pts">+10 pts</span>
+          </button>
+          <button class="act-btn" id="act-dinner" onclick="logActivity('dinner')">
+            <span class="icon">🍽️</span>Dinner Done<span class="pts">+10 pts</span>
+          </button>
+          <button class="act-btn" id="act-exercise" onclick="logActivity('exercise')">
+            <span class="icon">💪</span>Exercise Done<span class="pts">+15 pts</span>
+          </button>
+          <button class="act-btn" id="act-walking" onclick="logActivity('walking')">
+            <span class="icon">🚶</span>Walking Done<span class="pts">+10 pts</span>
+          </button>
+        </div>
+        <div class="msg" id="activityMsg"></div>
+      </div>
+      <!-- Next button -->
+      <div class="next-btn-row">
+        <button class="btn-next" onclick="goNextSection('activity')">Next: Health History <span>→</span></button>
+      </div>
+    </section>
+
+    <!-- ===== HEALTH HISTORY ===== -->
+    <section id="sec-history" class="section">
+      <div class="section-title">📅 Health History</div>
+      <div class="card">
+        <h3>Your Past Records</h3>
+        <div id="historyList"><p style="color:#aaa;text-align:center;padding:20px;">No history recorded yet.</p></div>
+      </div>
+      <!-- Next button -->
+      <div class="next-btn-row">
+        <button class="btn-next" onclick="goNextSection('history')">Next: Health Report <span>→</span></button>
+      </div>
+    </section>
+
+    <!-- ===== REPORT ===== -->
+    <section id="sec-report" class="section">
+      <div class="section-title">📄 Health Summary &amp; Report</div>
+
+      <!-- This printArea div is what gets isolated during printing -->
+      <div id="printArea">
+        <div id="summaryReport">
+          <h2>🩺 HealthHub – Personal Health Report</h2>
+          <div style="color:#aaa;font-size:12px;margin-bottom:16px;">Generated: <span id="reportDate"></span></div>
+          <div class="sum-row"><span class="sum-label">Name</span><span class="sum-value" id="rptName">--</span></div>
+          <div class="sum-row"><span class="sum-label">Family Group</span><span class="sum-value" id="rptFamily">--</span></div>
+          <div class="sum-row"><span class="sum-label">BMI Score</span><span class="sum-value" id="rptBMI">--</span></div>
+          <div class="sum-row"><span class="sum-label">BMI Category</span><span class="sum-value" id="rptCategory">--</span></div>
+          <div class="sum-row"><span class="sum-label">Symptoms Reported</span><span class="sum-value" id="rptSymptoms">--</span></div>
+          <div class="sum-row"><span class="sum-label">Risk Level</span><span class="sum-value" id="rptRisk">--</span></div>
+          <div class="sum-row"><span class="sum-label">Symptom-Based Suggestions</span></div>
+          <div id="rptSuggestions" style="font-size:13px;color:#555;padding:8px 0 12px;line-height:1.8;"></div>
+          <div class="sum-row"><span class="sum-label">Diet Plan</span></div>
+          <div id="rptDiet" style="font-size:13px;color:#555;padding:8px 0;line-height:1.8;"></div>
+          <div style="margin-top:24px;padding-top:12px;border-top:2px solid #eee;text-align:center;font-size:11px;color:#ccc;">HealthHub Family AI · Not official medical advice</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;">
+        <button class="btn btn-blue btn-sm" onclick="downloadPDF()">📥 Download PDF Report</button>
+        <button class="btn btn-ghost btn-sm" onclick="printReport()">🖨️ Print Report</button>
+      </div>
+      <!-- Next button (loops back to Dashboard) -->
+      <div class="next-btn-row">
+        <button class="btn-next" onclick="goNextSection('report')">🏠 Back to Dashboard <span>↺</span></button>
+      </div>
+    </section>
+
+    <!-- ===== ADMIN ===== -->
+    <section id="sec-admin" class="section">
+      <div class="section-title">🔐 Admin Portal</div>
+      <div class="admin-stats" id="adminStats"></div>
+      <div id="adminContent"><p style="color:#aaa;">Loading admin data...</p></div>
+    </section>
+
+  </div><!-- /main-content -->
+</div><!-- /appScreen -->
+
+</div><!-- /page-wrapper -->
+
+<!-- Knowledge Popup -->
+<div class="knowledge-popup" id="knowledgePopup">
+  <span class="kp-close" onclick="closeKnowledge()">✕</span>
+  <div class="kp-title">💡 Health Tip</div>
+  <div class="kp-msg" id="kpMsg"></div>
+</div>
+
+<script>
+const API = "http://localhost:3000/api";
+
+/* =====================================================================
+   SERVER HEALTH CHECK
+===================================================================== */
+async function checkServerStatus() {
+  const dot   = document.getElementById("serverDot");
+  const label = document.getElementById("serverLabel");
+  const banner = document.getElementById("offlineBanner");
+  if (!dot) return;
+  try {
+    const res = await fetch(`${API}/ping`, { method:"GET", signal: AbortSignal.timeout(3000) });
+    // Any response means server is up
+    dot.className = "server-dot online";
+    label.textContent = "Server Online";
+    if (banner) banner.classList.remove("show");
+  } catch {
+    dot.className = "server-dot offline";
+    label.textContent = "Server Offline";
+    if (banner) banner.classList.add("show");
+  }
+}
+// Poll every 10 seconds
+setInterval(checkServerStatus, 10000);
+checkServerStatus();
+// ─── State ──────────────────────────────────────────────────
+let state = {
+  user: null,         // { username, familyGroup, role, gamification, today }
+  bmiData: null,      // { bmi, category, dietPlan }
+  symptomsData: null  // { riskLevel, suggestions, doctors }
+};
+
+/* =====================================================================
+   BUBBLES
+===================================================================== */
+(function spawnBubbles() {
+  const c = document.getElementById("bubbleContainer");
+  const colors = ["rgba(255,255,255,0.22)","rgba(255,77,121,0.10)","rgba(166,193,238,0.25)","rgba(251,194,235,0.20)"];
+  for (let i = 0; i < 22; i++) {
+    const s = document.createElement("div");
+    s.className = "bubble";
+    const size = 40 + Math.random() * 130;
+    s.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random() * 100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${12 + Math.random() * 18}s;
+      animation-delay:${Math.random() * 14}s;
+    `;
+    c.appendChild(s);
+  }
+})();
+
+/* =====================================================================
+   AUTH TABS
+===================================================================== */
+function showAuthTab(tab) {
+  document.getElementById("loginForm").style.display    = tab === "login"    ? "block" : "none";
+  document.getElementById("registerForm").style.display = tab === "register" ? "block" : "none";
+  document.querySelectorAll(".auth-tab").forEach((el, i) => {
+    el.classList.toggle("active", (tab === "login" && i === 0) || (tab === "register" && i === 1));
+  });
+  ["loginMsg","registerMsg"].forEach(id => { const el = document.getElementById(id); el.className = "msg"; el.textContent = ""; });
+}
+
+function showMsg(id, type, text) {
+  const el = document.getElementById(id);
+  el.className = `msg ${type}`;
+  el.textContent = text;
+  setTimeout(() => { el.className = "msg"; el.textContent = ""; }, 5000);
+}
+
+/* =====================================================================
+   REGISTER
+===================================================================== */
+async function doRegister() {
+  const username    = document.getElementById("regUser").value.trim();
+  const password    = document.getElementById("regPass").value;
+  const familyGroup = document.getElementById("regFamily").value.trim();
+
+  if (!username || !password || !familyGroup) { showMsg("registerMsg","err","⚠️ All fields are required."); return; }
+  if (password.length < 4) { showMsg("registerMsg","err","❌ Password must be at least 4 characters."); return; }
+
+  try {
+    const res = await fetch(`${API}/register`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ username, password, familyGroup }) });
+    const data = await res.json();
+    if (!res.ok) { showMsg("registerMsg","err","❌ " + data.error); return; }
+    showMsg("registerMsg","ok","✅ " + data.message + " Please login.");
+    setTimeout(() => showAuthTab("login"), 1800);
+  } catch { showMsg("registerMsg","err","⚠️ Cannot connect to server. Is it running?"); }
+}
+
+/* =====================================================================
+   LOGIN
+===================================================================== */
+async function doLogin() {
+  const username = document.getElementById("loginUser").value.trim();
+  const password = document.getElementById("loginPass").value;
+  if (!username || !password) { showMsg("loginMsg","err","⚠️ Enter username and password."); return; }
+
+  try {
+    const res = await fetch(`${API}/login`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ username, password }) });
+    const data = await res.json();
+    if (!res.ok) { showMsg("loginMsg","err","❌ " + data.error); return; }
+
+    state.user = { username, ...data.user };
+    enterApp();
+  } catch { showMsg("loginMsg","err","⚠️ Cannot connect to server. Run: cd backend && npm start"); }
+}
+
+function enterApp() {
+  document.getElementById("authScreen").classList.remove("active");
+  document.getElementById("appScreen").classList.add("active");
+  document.getElementById("userPill").textContent = "👤 " + state.user.username;
+  document.getElementById("familyNameBadge").textContent = state.user.familyGroup;
+
+  if (state.user.role === "admin") {
+    document.getElementById("adminNavBtn").style.display = "inline-block";
+  }
+
+  updateGamificationUI(state.user.gamification, state.user.today);
+  loadFamilyDashboard();
+  loadHistory();
+  buildReportPreview();
+  startKnowledgePopups();
+  buildSymptomBoxes();
+}
+
+/* =====================================================================
+   LOGOUT
+===================================================================== */
+function doLogout() {
+  state = { user: null, bmiData: null, symptomsData: null };
+  stopKnowledgePopups();
+
+  // Reset forms
+  ["loginUser","loginPass","regUser","regPass","regFamily"].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = "";
+  });
+  document.getElementById("bmiResultCard").style.display = "none";
+  document.getElementById("dietContent").style.display = "none";
+  document.getElementById("noDietMsg").style.display = "block";
+  document.getElementById("symptomResult").classList.remove("show");
+  clearSymptoms();
+
+  document.getElementById("appScreen").classList.remove("active");
+  document.getElementById("authScreen").classList.add("active");
+  showAuthTab("login");
+  showSection("dashboard");
+}
+
+/* =====================================================================
+   NAVIGATION
+===================================================================== */
+function showSection(name) {
+  // Hide all sections, show the target
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  const target = document.getElementById("sec-" + name);
+  if (!target) { console.warn("Section not found: sec-" + name); return; }
+  target.classList.add("active");
+
+  // Highlight matching nav link using data-section attribute
+  document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+  const activeBtn = document.querySelector(`.nav-link[data-section="${name}"]`);
+  if (activeBtn) activeBtn.classList.add("active");
+
+  // Section-specific loaders
+  if (name === "history")  loadHistory();
+  if (name === "report")   buildReportPreview();
+  if (name === "admin")    loadAdmin();
+  if (name === "diet")     renderDietSection();
+  if (name === "symptoms") buildSymptomBoxes();
+}
+
+/* =====================================================================
+   FAMILY DASHBOARD
+===================================================================== */
+async function loadFamilyDashboard() {
+  if (!state.user) return;
+  try {
+    const res = await fetch(`${API}/family/${encodeURIComponent(state.user.familyGroup)}`);
+    const data = await res.json();
+    renderFamilyDashboard(data);
+  } catch { console.warn("Could not load family data."); }
+}
+
+function renderFamilyDashboard(data) {
+  // Alerts
+  const alertDiv = document.getElementById("alertBanners");
+  alertDiv.innerHTML = "";
+  data.members.forEach(m => {
+    if (m.riskLevel === "High") {
+      alertDiv.innerHTML += `<div class="alert-banner">🚨 <b>${m.name}</b> is at <b>High Risk</b>! Immediate medical attention may be needed.</div>`;
+    } else if (m.bmiCategory === "Obese") {
+      alertDiv.innerHTML += `<div class="alert-banner" style="border-left-color:var(--orange);color:#e65100;">⚠️ <b>${m.name}</b> needs better nutrition. BMI category: Obese.</div>`;
+    }
+  });
+
+  // Quick Stats
+  const qGrid = document.getElementById("quickStats");
+  qGrid.innerHTML = [
+    { label:"Family Members", val: data.members.length, icon:"👨‍👩‍👧", color:"var(--pink)" },
+    { label:"High Risk Members", val: data.members.filter(m=>m.riskLevel==="High").length, icon:"🚨", color:"var(--red)" },
+    { label:"Avg BMI", val: (data.members.reduce((a,m)=>a+(parseFloat(m.bmi)||0),0)/data.members.length||0).toFixed(1), icon:"⚖️", color:"var(--blue)" }
+  ].map(s => `
+    <div class="card" style="text-align:center;padding:20px;">
+      <div style="font-size:34px;">${s.icon}</div>
+      <div style="font-size:32px;font-weight:800;color:${s.color};margin:8px 0;">${s.val}</div>
+      <div style="color:#888;font-size:13px;">${s.label}</div>
+    </div>`).join("");
+
+  // Members grid
+  const grid = document.getElementById("familyMembersGrid");
+  if (!data.members.length) { grid.innerHTML = `<p style="color:#aaa;">No members found in "<b>${data.familyGroup}</b>" yet.</p>`; return; }
+
+  const AVATARS = ["👨","👩","🧑","👦","👧","👴","👵","🧒"];
+  grid.innerHTML = data.members.map((m, i) => {
+    const risk = m.riskLevel === "--" ? "unknown" : m.riskLevel;
+    const bmiCls = m.bmiCategory && m.bmiCategory !== "--" ? m.bmiCategory : "";
+    return `
+    <div class="member-card risk-${risk.replace("unknown","Low")}">
+      <div class="member-card-top">
+        <div class="member-icon">${AVATARS[i % AVATARS.length]}</div>
+        <div>
+          <div class="member-name-big">${m.name}</div>
+          <div class="member-family">${data.familyGroup}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:12px;color:#aaa;margin-bottom:2px;">BMI Score</div>
+          <div class="bmi-badge ${bmiCls}">${m.bmi}</div>
+          <div style="font-size:12px;color:#888;margin-top:2px;">${m.bmiCategory || "--"}</div>
+        </div>
+        <div style="text-align:right;">
+          <span class="risk-badge ${risk}">
+            ${risk === "High" ? "🔴 " : risk === "Moderate" ? "🟡 " : "🟢 "} ${risk} Risk
+          </span>
+          <div style="font-size:12px;color:#aaa;margin-top:6px;">Points: ${m.gamification?.totalPoints || 0} · 🔥 ${m.gamification?.streak || 0}d</div>
+        </div>
+      </div>
+      ${m.symptoms?.length ? `<div style="margin-top:10px;font-size:12px;color:#aaa;">Symptoms: ${m.symptoms.join(", ")}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+/* =====================================================================
+   BMI CALCULATOR
+===================================================================== */
+async function doBMI() {
+  const height = parseFloat(document.getElementById("bmiHeight").value);
+  const weight = parseFloat(document.getElementById("bmiWeight").value);
+  if (!height || !weight || height < 50 || weight < 10) { showMsg("bmiMsg","err","⚠️ Enter valid height and weight."); return; }
+
+  try {
+    const res = await fetch(`${API}/bmi`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ username: state.user.username, height, weight })
+    });
+    const data = await res.json();
+    if (!res.ok) { showMsg("bmiMsg","err","❌ " + data.error); return; }
+
+    state.bmiData = data;
+    document.getElementById("bmiNumber").textContent = data.bmi;
+    document.getElementById("bmiNumber").className = `bmi-badge ${data.category}`;
+    document.getElementById("bmiCategoryLabel").textContent = `Category: ${data.category}`;
+    document.getElementById("bmiRange").textContent = `Healthy weight range: ${data.minWeight} – ${data.maxWeight} kg`;
+    document.getElementById("bmiResultCard").style.display = "block";
+    document.getElementById("bmiResultCard").scrollIntoView({ behavior: "smooth" });
+
+    buildReportPreview();
+    loadFamilyDashboard();
+  } catch { showMsg("bmiMsg","err","⚠️ Cannot connect to server."); }
+}
+
+/* =====================================================================
+   DIET PLAN – WEEKLY SYSTEM
+===================================================================== */
+
+// -- Week state stored in localStorage per user --
+const DIET_STORAGE_KEY = () => `dietWeek_${state.user?.username || 'guest'}`;
+
+const DAY_NAMES = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const DAY_SHORT = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+// Rotate meals slightly per day to create variety
+function buildWeeklyMeals(baseMeals) {
+  const days = [];
+  const mealKeys = Object.keys(baseMeals);
+  for (let d = 0; d < 7; d++) {
+    const dayMeals = {};
+    mealKeys.forEach(meal => {
+      const items = [...baseMeals[meal]];
+      // Rotate list by d positions to create variety each day
+      const rotated = [...items.slice(d % items.length), ...items.slice(0, d % items.length)];
+      dayMeals[meal] = rotated;
+    });
+    days.push(dayMeals);
+  }
+  return days;
+}
+
+function getDietWeekData() {
+  try {
+    const raw = localStorage.getItem(DIET_STORAGE_KEY());
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return null;
+}
+
+function saveDietWeekData(data) {
+  try { localStorage.setItem(DIET_STORAGE_KEY(), JSON.stringify(data)); } catch {}
+}
+
+function initDietWeek(dietPlan) {
+  const existing = getDietWeekData();
+  const now = Date.now();
+  const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+  if (existing && (now - existing.startTs) < ONE_WEEK_MS) {
+    return existing; // use existing week
+  }
+
+  // New week!
+  const weeklyMeals = buildWeeklyMeals(dietPlan.meals);
+  const newData = {
+    startTs: now,
+    currentDay: 0,
+    weeklyMeals,
+    // checkedItems[day][meal][itemIndex] = true/false
+    checkedItems: Array.from({length:7}, () => ({}))
+  };
+  saveDietWeekData(newData);
+  return newData;
+}
+
+let dietState = null; // current week data
+
+function renderDietSection() {
+  if (!state.bmiData) {
+    document.getElementById("noDietMsg").style.display = "block";
+    document.getElementById("dietContent").style.display = "none";
+    return;
+  }
+  document.getElementById("noDietMsg").style.display = "none";
+  document.getElementById("dietContent").style.display = "block";
+
+  const { category, dietPlan } = state.bmiData;
+  document.getElementById("dietHeadline").textContent = `🍽️ Weekly Diet Plan — ${category} BMI`;
+  document.getElementById("dietSummary").textContent  = dietPlan.summary;
+
+  // Init or load week
+  dietState = initDietWeek(dietPlan);
+
+  // Check if week is over & show refresh banner
+  const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const elapsed = Date.now() - dietState.startTs;
+  const isWeekOver = elapsed >= ONE_WEEK_MS;
+  const refreshBanner = document.getElementById("weekRefreshBanner");
+  if (isWeekOver) {
+    refreshBanner.classList.add("show");
+    // Auto-reset for next week
+    dietState = {
+      startTs: Date.now(),
+      currentDay: 0,
+      weeklyMeals: buildWeeklyMeals(dietPlan.meals),
+      checkedItems: Array.from({length:7}, () => ({}))
+    };
+    saveDietWeekData(dietState);
+    setTimeout(() => refreshBanner.classList.remove("show"), 8000);
+  } else {
+    refreshBanner.classList.remove("show");
+  }
+
+  // Update countdown
+  updateWeekCountdown();
+
+  // Build day tabs
+  buildDayTabs();
+
+  // Render current day
+  renderDayMeals(dietState.currentDay);
+
+  const tipsEl = document.getElementById("dietTips");
+  tipsEl.innerHTML = dietPlan.tips.map(t => `<li>💡 ${t}</li>`).join("");
+}
+
+function updateWeekCountdown() {
+  if (!dietState) return;
+  const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const remaining = ONE_WEEK_MS - (Date.now() - dietState.startTs);
+  const days = Math.max(0, Math.floor(remaining / (24*60*60*1000)));
+  const hours = Math.max(0, Math.floor((remaining % (24*60*60*1000)) / (60*60*1000)));
+  const txt = document.getElementById("countdownText");
+  const prog = document.getElementById("weekProgress");
+  if (txt) txt.textContent = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
+  const pct = Math.min(100, ((Date.now() - dietState.startTs) / ONE_WEEK_MS) * 100).toFixed(0);
+  if (prog) prog.textContent = `Week ${pct}% complete`;
+}
+
+function buildDayTabs() {
+  const nav = document.getElementById("weekNav");
+  nav.innerHTML = DAY_SHORT.map((d, i) => {
+    const dayChecks = dietState.checkedItems[i] || {};
+    const totalItems = dietState.weeklyMeals[i] ? Object.values(dietState.weeklyMeals[i]).flat().length : 0;
+    const doneItems = Object.values(dayChecks).filter(Boolean).length;
+    const pct = totalItems ? Math.round((doneItems / totalItems) * 100) : 0;
+    const today = getTodayDietIndex();
+    const isToday = i === today;
+    return `
+    <button class="day-tab${dietState.currentDay === i ? ' active' : ''}" onclick="switchDay(${i})">
+      <span style="font-size:10px;display:block;opacity:0.8;">${isToday ? '📍' : ''}</span>
+      ${d}
+      <span class="day-progress"><span class="day-fill" style="width:${pct}%"></span></span>
+    </button>`;
+  }).join("");
+}
+
+function getTodayDietIndex() {
+  // 0=Monday, returns current day of week index (0-6)
+  const jsDay = new Date().getDay(); // 0=Sunday
+  return jsDay === 0 ? 6 : jsDay - 1;
+}
+
+function switchDay(dayIndex) {
+  dietState.currentDay = dayIndex;
+  saveDietWeekData(dietState);
+  buildDayTabs();
+  renderDayMeals(dayIndex);
+}
+
+function renderDayMeals(dayIndex) {
+  const mealsEl = document.getElementById("dietMeals");
+  mealsEl.innerHTML = "";
+  const mealIcons = { Morning: "🌅", Afternoon: "☀️", Evening: "🌤️", Night: "🌙" };
+  const dayMeals = dietState.weeklyMeals[dayIndex];
+  const dayChecks = dietState.checkedItems[dayIndex] || {};
+
+  // Day header
+  const todayIdx = getTodayDietIndex();
+  const isToday = dayIndex === todayIdx;
+  const dayLabel = document.createElement("div");
+  dayLabel.style.cssText = "font-size:18px;font-weight:800;color:#333;margin-bottom:16px;display:flex;align-items:center;gap:10px;";
+  dayLabel.innerHTML = `${isToday ? '📍' : '📅'} ${DAY_NAMES[dayIndex]} ${isToday ? '<span style="font-size:12px;background:var(--pink);color:#fff;padding:3px 10px;border-radius:20px;">Today</span>' : ''}`;
+  mealsEl.appendChild(dayLabel);
+
+  let itemGlobalIdx = 0;
+  Object.entries(dayMeals).forEach(([meal, items]) => {
+    const sec = document.createElement("div");
+    sec.className = "meal-section";
+    sec.innerHTML = `<div class="meal-title">${mealIcons[meal] || "🍴"} ${meal} <span style="font-size:11px;color:#aaa;font-weight:400;">(${items.length} items)</span></div>`;
+    items.forEach((item, idx) => {
+      const key = `${meal}_${idx}`;
+      const isDone = !!dayChecks[key];
+      const row = document.createElement("label");
+      row.className = "meal-item" + (isDone ? " checked" : "");
+      row.innerHTML = `
+        <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleDietItem(this, ${dayIndex}, '${key}')">
+        <span class="${isDone ? 'done' : ''}">${item}</span>
+        <span class="meal-done-badge">✓ Done</span>
+      `;
+      sec.appendChild(row);
+      itemGlobalIdx++;
+    });
+    mealsEl.appendChild(sec);
+  });
+}
+
+function toggleDietItem(checkbox, dayIndex, key) {
+  if (!dietState.checkedItems[dayIndex]) dietState.checkedItems[dayIndex] = {};
+  dietState.checkedItems[dayIndex][key] = checkbox.checked;
+  saveDietWeekData(dietState);
+
+  // Update visual
+  const label = checkbox.closest(".meal-item");
+  const span = label.querySelector("span");
+  if (checkbox.checked) {
+    label.classList.add("checked");
+    span.classList.add("done");
+  } else {
+    label.classList.remove("checked");
+    span.classList.remove("done");
+  }
+
+  // Refresh day tab progress
+  buildDayTabs();
+}
+
+/* =====================================================================
+   SECTION NAVIGATION (Next Button)
+===================================================================== */
+const SECTION_ORDER = ["dashboard","bmi","symptoms","diet","activity","history","report"];
+
+function goNextSection(current) {
+  const idx = SECTION_ORDER.indexOf(current);
+  if (idx >= 0) {
+    // Loop back to dashboard after report
+    const next = SECTION_ORDER[(idx + 1) % SECTION_ORDER.length];
+    showSection(next);
+    window.scrollTo({ top:0, behavior:"smooth" });
+  }
+}
+
+/* =====================================================================
+   SYMPTOM CHECKER
+===================================================================== */
+const SYMPTOMS = [
+  { name:"Fever",               icon:"🤒" },
+  { name:"Headache",            icon:"🤕" },
+  { name:"Fatigue",             icon:"😴" },
+  { name:"Excess Thirst",       icon:"💧" },
+  { name:"Dizziness",           icon:"🌀" },
+  { name:"Chest Pain",          icon:"🫀" },
+  { name:"Shortness of Breath", icon:"🫁" },
+  { name:"Nausea",              icon:"🤢" },
+  { name:"Body Pain",           icon:"🦴" },
+  { name:"Loss of Appetite",    icon:"🍽️" },
+  { name:"Vomiting",            icon:"🤮" },
+  { name:"Poor Sleep",          icon:"🌙" },
+];
+
+function buildSymptomBoxes() {
+  const grid = document.getElementById("symptomGrid");
+  grid.innerHTML = SYMPTOMS.map(s => `
+    <div class="symptom-box" id="sb-${s.name.replace(/ /g,'_')}" onclick="toggleSymptom(this,'${s.name}')">
+      <span class="sym-icon">${s.icon}</span>${s.name}
+    </div>`).join("");
+}
+
+function toggleSymptom(el, name) { el.classList.toggle("selected"); }
+
+function getSelectedSymptoms() {
+  return Array.from(document.querySelectorAll(".symptom-box.selected")).map(el => el.textContent.trim().replace(/./u,"").trim());
+}
+
+function clearSymptoms() {
+  document.querySelectorAll(".symptom-box").forEach(el => el.classList.remove("selected"));
+  document.getElementById("symptomResult").classList.remove("show");
+}
+
+async function doSymptoms() {
+  const symptoms = Array.from(document.querySelectorAll(".symptom-box.selected")).map(el => {
+    return el.querySelector(".sym-icon") ? el.textContent.replace(el.querySelector(".sym-icon").textContent,"").trim() : el.textContent.trim();
+  });
+
+  if (!symptoms.length) { showMsg("sympMsg","warn","⚠️ Select at least one symptom."); return; }
+
+  try {
+    const res = await fetch(`${API}/symptoms`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ username: state.user.username, symptoms })
+    });
+    const data = await res.json();
+    if (!res.ok) { showMsg("sympMsg","err","❌ " + data.error); return; }
+
+    state.symptomsData = { symptoms, ...data };
+
+    const resultBox = document.getElementById("symptomResult");
+    document.getElementById("riskLabel").textContent = `${data.riskLevel === "High" ? "🔴" : data.riskLevel === "Moderate" ? "🟡" : "🟢"} ${data.riskLevel} Risk`;
+    document.getElementById("riskLabel").className = `risk-label ${data.riskLevel}`;
+
+    document.getElementById("suggestionsList").innerHTML = data.suggestions.map(s => `<p>${s}</p>`).join("");
+    document.getElementById("doctorsList").innerHTML = data.doctors.length
+      ? `<div style="font-weight:700;margin-bottom:8px;">👨‍⚕️ Consult:</div>` + data.doctors.map(d => `<span style="display:inline-block;background:#ffe4ec;color:#c62828;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;margin:3px;">${d}</span>`).join("")
+      : "";
+
+    resultBox.classList.add("show");
+    resultBox.querySelector("#riskLabel").scrollIntoView({ behavior:"smooth" });
+
+    buildReportPreview();
+    loadFamilyDashboard();
+  } catch { showMsg("sympMsg","err","⚠️ Cannot connect to server."); }
+}
+
+/* =====================================================================
+   GAMIFICATION
+===================================================================== */
+async function logActivity(activity) {
+  try {
+    const res = await fetch(`${API}/activity`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ username: state.user.username, activity })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showMsg("activityMsg", data.already ? "warn" : "err", data.error);
+      return;
+    }
+    state.user.gamification = data.gamification;
+    state.user.today = data.today;
+    updateGamificationUI(data.gamification, data.today);
+    showMsg("activityMsg","ok","🎉 " + data.message);
+  } catch { showMsg("activityMsg","err","⚠️ Cannot connect to server."); }
+}
+
+function updateGamificationUI(gamification, today) {
+  if (!today) return;
+  document.getElementById("todayPoints").textContent   = today.points || 0;
+  document.getElementById("totalPoints").textContent   = gamification?.totalPoints || 0;
+  document.getElementById("streakCount").textContent   = (gamification?.streak || 0) + " 🔥";
+
+  ["breakfast","lunch","dinner","exercise","walking"].forEach(act => {
+    const btn = document.getElementById("act-" + act);
+    if (btn) btn.classList.toggle("done", !!today[act]);
+  });
+}
+
+/* =====================================================================
+   HISTORY
+===================================================================== */
+async function loadHistory() {
+  if (!state.user) return;
+  try {
+    const res  = await fetch(`${API}/history/${state.user.username}`);
+    const data = await res.json();
+    const list = document.getElementById("historyList");
+
+    if (!data.history?.length) {
+      list.innerHTML = `<p style="color:#aaa;text-align:center;padding:20px;">No history recorded yet. Calculate your BMI to start.</p>`;
+      return;
+    }
+    list.innerHTML = [...data.history].reverse().map(h => `
+      <div class="history-row risk-${h.riskLevel?.replace("--","Low")}">
+        <div>
+          <div class="history-date">📅 ${h.date}</div>
+          <div class="history-meta">Symptoms: ${h.symptoms?.join(", ") || "None"}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:800;font-size:18px;color:var(--pink);">BMI ${h.bmi || "--"}</div>
+          <div class="history-meta">${h.bmiCategory || "--"}</div>
+          <span class="risk-badge ${h.riskLevel || 'unknown'}">${h.riskLevel || "--"}</span>
+        </div>
+      </div>`).join("");
+  } catch {}
+}
+
+/* =====================================================================
+   HEALTH SUMMARY REPORT
+===================================================================== */
+function buildReportPreview() {
+  if (!state.user) return;
+  document.getElementById("reportDate").textContent  = new Date().toLocaleString();
+  document.getElementById("rptName").textContent     = state.user.username;
+  document.getElementById("rptFamily").textContent   = state.user.familyGroup;
+  document.getElementById("rptBMI").textContent      = state.bmiData?.bmi || "--";
+  document.getElementById("rptCategory").textContent = state.bmiData?.category || "--";
+  document.getElementById("rptSymptoms").textContent = state.symptomsData?.symptoms?.join(", ") || "--";
+  document.getElementById("rptRisk").textContent     = state.symptomsData?.riskLevel || "--";
+
+  document.getElementById("rptSuggestions").innerHTML = (state.symptomsData?.suggestions || []).map(s=>`<div>${s}</div>`).join("") || "<i>No symptom data yet.</i>";
+
+  if (state.bmiData?.dietPlan) {
+    const dp = state.bmiData.dietPlan;
+    document.getElementById("rptDiet").innerHTML =
+      `<b>${dp.summary}</b><br>` +
+      Object.entries(dp.meals).map(([m,items]) => `<b>${m}:</b> ${items.join(", ")}`).join("<br>");
+  } else {
+    document.getElementById("rptDiet").innerHTML = "<i>Calculate BMI first to see diet plan.</i>";
+  }
+}
+
+function downloadPDF() {
+  buildReportPreview();
+  const opt = {
+    margin: 0.5,
+    filename: `HealthHub_${state.user.username}_Report.pdf`,
+    image: { type:"jpeg", quality:0.97 },
+    html2canvas: { scale:2, useCORS:true },
+    jsPDF: { unit:"in", format:"letter", orientation:"portrait" }
+  };
+  html2pdf().set(opt).from(document.getElementById("summaryReport")).save()
+    .then(() => alert("✅ PDF Downloaded!"));
+}
+
+function printReport() {
+  buildReportPreview();
+  // Open a new window with only the report content + clean styles
+  const reportHTML = document.getElementById("summaryReport").innerHTML;
+  const win = window.open("", "_blank", "width=800,height=900");
+  win.document.write(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HealthHub – Health Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Outfit',sans-serif; background:#fff; color:#333; padding:40px; }
+    h2 { color:#ff4d79; border-bottom:3px solid #ff4d79; padding-bottom:10px; margin-bottom:18px; font-size:22px; }
+    .sum-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:9px 0; border-bottom:1px solid #eee; font-size:14px;
+    }
+    .sum-row:last-of-type { border:none; }
+    .sum-label { font-weight:600; color:#777; }
+    .sum-value { font-weight:700; color:#333; }
+    #rptSuggestions, #rptDiet { font-size:13px; color:#555; padding:8px 0 12px; line-height:1.9; }
+    footer { margin-top:24px; padding-top:12px; border-top:1px solid #eee;
+             text-align:center; font-size:11px; color:#bbb; }
+    @media print {
+      body { padding:20px; }
+      @page { margin:1cm; }
+    }
+  </style>
+</head>
+<body>
+  ${reportHTML}
+  <script>window.onload = function(){ window.print(); window.onafterprint = function(){ window.close(); }; }<\/script>
+</body>
+</html>`);
+  win.document.close();
+}
+
+/* =====================================================================
+   ADMIN PORTAL
+===================================================================== */
+async function loadAdmin() {
+  // Front-end guard: only the exact admin account can access this
+  if (!state.user || state.user.role !== "admin") {
+    document.getElementById("adminContent").innerHTML = `<div class="msg err show" style="display:block;">🚫 Access denied.</div>`;
+    return;
+  }
+  try {
+    const res  = await fetch(`${API}/admin?username=${state.user.username}`);
+    const data = await res.json();
+    if (!res.ok) { document.getElementById("adminContent").innerHTML = `<div class="msg err show">${data.error}</div>`; return; }
+
+    document.getElementById("adminStats").innerHTML = [
+      { label:"Total Users",   num: data.totalUsers,                                                  icon:"👥" },
+      { label:"Families",      num: Object.keys(data.families).length,                                icon:"🏠" },
+      { label:"High Risk",     num: Object.values(data.families).flat().filter(m=>m.riskLevel==="High").length, icon:"🚨" }
+    ].map(s => `<div class="admin-stat-card"><div style="font-size:28px;">${s.icon}</div><div class="num">${s.num}</div><div class="lbl">${s.label}</div></div>`).join("");
+
+    document.getElementById("adminContent").innerHTML = Object.entries(data.families).map(([fam, members]) => `
+      <div class="admin-family-block">
+        <div class="admin-family-name">👨‍👩‍👧 ${fam}</div>
+        <table class="admin-table">
+          <thead><tr><th>Name</th><th>Role</th><th>BMI</th><th>Category</th><th>Risk</th><th>Symptoms Reported</th><th>Suggestions</th><th>Points</th><th>Streak</th><th>Records</th></tr></thead>
+          <tbody>
+            ${members.map(m=>`
+              <tr>
+                <td><b>${m.name}</b></td>
+                <td>${m.role}</td>
+                <td>${m.bmi}</td>
+                <td>${m.bmiCategory}</td>
+                <td><span class="risk-badge ${m.riskLevel?.replace("--","unknown")}">${m.riskLevel}</span></td>
+                <td style="max-width:180px;font-size:12px;">${m.symptoms?.length ? m.symptoms.join(", ") : "<i style='color:#ccc'>None</i>"}</td>
+                <td style="max-width:220px;font-size:12px;">${m.suggestions?.length ? m.suggestions.map(s=>`<div style='margin-bottom:4px;'>• ${s.replace(/^[•⚠️🚨✅]/,'').trim()}</div>`).join('') : "<i style='color:#ccc'>None</i>"}</td>
+                <td>${m.totalPoints}</td>
+                <td>${m.streak} 🔥</td>
+                <td>${m.historyCount}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>`).join("");
+  } catch { document.getElementById("adminContent").innerHTML = `<p style="color:#aaa;">Could not load admin data.</p>`; }
+}
+
+/* =====================================================================
+   KNOWLEDGE POPUP SYSTEM
+===================================================================== */
+const knowledgeFacts = [
+  "Your heart beats about 100,000 times a day ❤️",
+  "Staying hydrated helps regulate body temperature 🌡️",
+  "Regular exercise boosts your mood naturally 😊",
+  "Your lungs supply oxygen to over 37 trillion cells 🫁",
+  "Good posture reduces back pain and improves breathing 🧍",
+  "Eating fruits daily strengthens your immune system 🍎",
+  "Your body repairs itself while you sleep 🛌",
+  "Deep breathing reduces stress and anxiety 🌬️",
+  "Walking improves blood circulation 🚶",
+  "Your bones are strongest when you stay active 🦴",
+  "Too much sugar can increase health risks 🍭",
+  "Stretching daily improves flexibility and mobility 🤸",
+  "Drinking water helps flush out toxins 💧",
+  "Your brain needs rest to function properly 🧠",
+  "Healthy eating improves energy levels ⚡",
+  "Sunlight helps your body produce Vitamin D ☀️",
+  "Exercise helps control weight and improves heart health ❤️",
+  "Lack of sleep can weaken your immune system 😴",
+  "Eating slowly improves digestion 🍽️",
+  "Regular health checks help detect problems early 🩺"
+];
+let kpTimer = null;
+let kpIndex = 0;
+
+function startKnowledgePopups() {
+  showKnowledge();
+  kpTimer = setInterval(showKnowledge, 5 * 60 * 1000); // every 5 min
+}
+function stopKnowledgePopups() {
+  clearInterval(kpTimer); kpTimer = null;
+  closeKnowledge();
+}
+function showKnowledge() {
+  document.getElementById("kpMsg").textContent = knowledgeFacts[kpIndex % knowledgeFacts.length];
+  kpIndex++;
+  const popup = document.getElementById("knowledgePopup");
+  popup.classList.add("show");
+  setTimeout(closeKnowledge, 10000);
+}
+function closeKnowledge() { document.getElementById("knowledgePopup").classList.remove("show"); }
+
+/* =====================================================================
+   INIT
+===================================================================== */
+buildSymptomBoxes();
+</script>
+</body>
+</html>
