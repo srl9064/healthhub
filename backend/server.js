@@ -592,6 +592,6 @@ app.get("/{*path}", (req, res) => {
 });
 
 app.listen(3000, () => {
-  console.log("✅ HealthHub server running on http://localhost:3000");
+  console.log("✅ HealthHub server running on port 3000");
   console.log(`💾 User data stored in: ${DATA_FILE}`);
 });
